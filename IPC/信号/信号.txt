@@ -1,0 +1,79 @@
+一、 kill函数
+
+
+1.用于向任何进程组或进程发送信号
+
+#include <signal.h>
+int kill(pid_t pid,int sig);
+
+
+
+2. 参数：
+pid：可能选择有以下四种
+
+1. pid大于零时，pid是信号欲送往的进程的标识。
+2. pid等于零时，信号将送往所有与调用kill()的那个进程属同一个组的进程。
+3. pid等于-1时，信号将送往所有调用进程有权给其发送信号的进程，除了进程1(init)。
+4. pid小于-1时，信号将送往以-pid为组标识的进程。
+
+sig：准备发送的信号代码，假如其值为零则没有任何信号送出，但是系统会执行错误检查，通常会利用sig值为零来检验某个进程是否仍在执行。
+
+返回值说明： 成功执行时，返回0；失败返回-1
+
+
+示例：
+
+
+（1）等待接收信号
+#include <stdio.h>
+#include <unistd.h>
+#include <signal.h>
+#include <stdlib.h>
+ 
+char acProcessName[32];
+ 
+void sig_handler(int signo);
+int main(int argc, char **argv)
+{
+    snprintf(acProcessName, sizeof(acProcessName), "%s", argv[0]);
+    printf("\n [%s] main is waiting for a signal\n", acProcessName);
+    if(signal(SIGUSR1,sig_handler) == SIG_ERR){
+        perror("signal errror");
+        exit(EXIT_FAILURE);
+    }
+    for(; ;);//有时间让我们发送信号
+ 
+    return 0;
+}
+ 
+void sig_handler(int signo)
+{
+    printf("\n [%s] catch the signal SIGUSR1 %d\n", acProcessName, signo);
+    exit(EXIT_FAILURE);
+}
+
+
+（2）发送信号
+#include <stdio.h>
+#include <string.h>
+#include <sys/types.h>
+#include <signal.h>
+ 
+char acProcessName[32];
+ 
+int main(int argc, char **argv)
+{
+	snprintf(acProcessName, sizeof(acProcessName), "%s",  argv[0]);
+	
+	int pid = 0;
+	if (argc != 2)
+	{
+			printf("%s [pid_number]\n", argv[0]);
+			return -1;
+	}
+	pid = atoi(argv[1]);
+	kill(pid, SIGUSR1);
+	printf("[%s] pid = %d\n", acProcessName, pid);
+	
+	return 0;
+}
