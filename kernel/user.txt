@@ -1,0 +1,9 @@
+# shell脚本，读取配置文件中路由器当前工作模式，并写数据到相应的proc文件
+set_mode_to_kernel() {
+    mode=`uci get system.system.mode`
+    if [ "$mode" == "AP" ]; then
+        echo -e "ap\c" > /proc/operation_mode
+    else
+        echo -e "repeater\c" > /proc/operation_mode
+    fi
+}
